@@ -1,14 +1,17 @@
 Just some simple examples to learn the basics of Elm. 
 
-[Install Elm here](https://guide.elm-lang.org/install.html), then in the command line, run:
+Install Elm by following the directions [here](https://guide.elm-lang.org/install.html), then in the command line:
 
 ```shell
+git clone https://github.com/ChrisVbot/simple-elm-project.git
+cd simple-elm-project
 elm-reactor
 ```
 
 to use built-in dev server. 
-Note: elm-reactor does not seem to work well with README.md. As a temp fix, can delete README.md before starting server or 
-just ensure you are in examples directory.
+
+**Note**: elm-reactor does not seem to work well with README.md. As a temp fix, can delete README.md before starting server or 
+just ensure you are in examples directory before starting elm-reactor.
 
 Other options: 
 
