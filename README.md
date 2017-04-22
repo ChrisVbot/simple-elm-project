@@ -1,41 +1,37 @@
-Just some simple examples to learn the basics of Elm. 
+# Install
 
 Install Elm by following the directions [here](https://guide.elm-lang.org/install.html), then in the command line:
 
-```shell
+```bash
 git clone https://github.com/ChrisVbot/simple-elm-project.git
 cd simple-elm-project
 elm-reactor
 ```
 
-to use built-in dev server. 
+## Other options
 
-**Note**: elm-reactor does not seem to work well with README.md. As a temp fix, can delete README.md before starting server or 
-just ensure you are in examples directory before starting elm-reactor.
-
-Other options: 
-
-```shell
+```bash
 elm-make Filename.elm --output=main.html
 ```
 
-That creates a pretty gnarly inline script, so you may want to compile to a JS file instead like so:
+This generates your HTML file, but with a pretty gnarly inline script, so you may want to compile to a JS file instead like so:
 
-```shell
+```bash
 elm-make Filename.elm --output=main.js
 ```
 
-If using second option, you'll want to put something like this in your HTML file:
+If using second option, you'll want to put something like this in your HTML file, followed by a script tag pointing to the JS file:
 
 ```html
 <div id="main"></div>
-<script src="elm.js"></script>
-<script>
-    var node = document.getElementById('main');
-    var app = Elm.Main.embed(node);
-    // Note: if your Elm module is named "MyThing.Root" you
-    // would call "Elm.MyThing.Root.embed(node)" instead.
-</script>
 ```
 
-That means you could also just plug some Elm into an existing project to try it out. 
+Then in another set of script tags, you'd put something like:
+
+```javascript
+var node = document.getElementById('main');
+var app = Elm.Main.embed(node);
+// Note: if your Elm module is named "MyThing.Root" you
+// would call "Elm.MyThing.Root.embed(node)" instead.
+```
+**Note**: This must go after your initial script tag linking to main.js (or whatever you called it).
