@@ -6,7 +6,9 @@ Just some simple examples to learn the basics of Elm.
 elm-reactor
 ```
 
-to use built-in dev server.
+to use built-in dev server. 
+Note: elm-reactor does not seem to work well with README.md. As a temp fix, can delete README.md before starting server or 
+just ensure you are in examples directory.
 
 Other options: 
 
