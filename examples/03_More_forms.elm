@@ -71,8 +71,10 @@ update msg model =
 
 --VIEW
 {--
-    For the last child, we do not directly use an HTML function. Instead, we call the viewValidation
-    function, passing in the current model.
+    For the last child, we start with no errors so result is just an empty ul element.
+    Once user hits the button which triggers the Errors message, the
+    model's errors field is updated by running the detectValidationErrors function
+    which runs through all the fields with various validator checks.
 --}
 
 
@@ -89,7 +91,7 @@ view model =
 
 
 
--- Grabs errors from model record and generates li for each error
+-- Grabs errors from model record and generates li for each error. Also always creates a ul
 
 
 validate : Model -> Html msg
@@ -127,11 +129,11 @@ detectValidationErrors { name, password, passwordAgain, age } =
             ]
 
         validationErrorMessages =
+            -- at this point, validations variable is a list with (possibly) records in it
             validations
                 --keeps only those elements for which the function returns True
                 |> List.filter .condition
-                -- maps out new list with one entry for record in list containing .errorMessage field
-                -- which all have .condition = True at this point
+                -- maps out new list with one entry for each record in list where errorMessage = True
                 |> List.map .errorMessage
     in
         -- returns new list created from above filtering and mapping
