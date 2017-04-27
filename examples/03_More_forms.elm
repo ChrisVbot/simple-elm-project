@@ -3,9 +3,10 @@ module MoreForms exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
-import Regex exposing (..)
+import Regex exposing (regex)
 
 
+main : Program Never Model Msg
 main =
     Html.beginnerProgram { model = model, view = view, update = update }
 
@@ -19,6 +20,7 @@ type alias Model =
     , password : String
     , passwordAgain : String
     , age : String
+    , errors : List String
     }
 
 
@@ -28,7 +30,7 @@ type alias Model =
 
 model : Model
 model =
-    Model "" "" "" ""
+    Model "" "" "" "" []
 
 
 
@@ -44,6 +46,7 @@ type Msg
     | Password String
     | PasswordAgain String
     | Age String
+    | Errors
 
 
 update : Msg -> Model -> Model
@@ -61,6 +64,9 @@ update msg model =
         Age number ->
             { model | age = number }
 
+        Errors ->
+            { model | errors = detectValidationErrors model }
+
 
 
 --VIEW
@@ -73,41 +79,60 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ type_ "text", placeholder "Name" ] []
-        , input [ type_ "password", placeholder "Password" ] []
-        , input [ type_ "password", placeholder "Password again" ] []
-        , input [ type_ "text", placeholder "Age" ] []
-
-        -- , button [ onClick checkValidators ] [ text "Submit" ]
-        , viewValidation model
+        [ input [ type_ "text", placeholder "Name", onInput Name ] []
+        , input [ type_ "password", placeholder "Password", onInput Password ] []
+        , input [ type_ "password", placeholder "Password again", onInput PasswordAgain ] []
+        , input [ type_ "text", placeholder "Age", onInput Age ] []
+        , button [ onClick Errors ] [ text "Check for errors" ]
+        , validate model
         ]
 
 
 
--- checkValidators: Model -> Html msg
--- checkValidators model =
-{--
-    Compares the two passwords and sets inline styles using a tuple.
---}
+-- Grabs errors from model record and generates li for each error
 
 
-viewValidation : Model -> Html msg
-viewValidation model =
+validate : Model -> Html msg
+validate { errors } =
     let
-        ( color, message ) =
-            if String.length model.password < 8 then
-                ( "red", "Password must be 8 characters or more" )
-            else if not (Regex.contains (regex "[A-Z]+") model.password) then
-                ( "red", "Password must contain at least one capital letter" )
-            else if not (Regex.contains (regex "[a-z]+") model.password) then
-                ( "red", "Password must contain at least one lowercase letter" )
-            else if not (Regex.contains (regex "\\d") model.password) then
-                ( "red", "Password must contain at least one digit" )
-            else if not (Regex.contains (regex "\\d") model.age) then
-                ( "red", "Age must be a number" )
-            else if model.password == model.passwordAgain then
-                ( "green", "OK" )
-            else
-                ( "red", "Passwords do not match" )
+        errorListItems =
+            List.map (\errorMsg -> li [ style [ ( "color", "red" ) ] ] [ text errorMsg ])
+                errors
     in
-        div [ style [ ( "color", color ) ] ] [ text message ]
+        ul [] errorListItems
+
+
+type alias Validation =
+    { condition : Bool
+    , errorMessage : String
+    }
+
+
+
+-- Detects errors by using Validation type alias as a constructor function
+
+
+detectValidationErrors : Model -> List String
+detectValidationErrors { name, password, passwordAgain, age } =
+    let
+        validations =
+            [ Validation (String.length name < 2) "Name must be at least 2 characters"
+            , Validation (String.length password < 8) "Password must be at least 8 characters"
+            , Validation (String.contains "!" password) "! is a forbidden character"
+            , Validation (password /= passwordAgain) "Passwords do not match"
+            , Validation (not (Regex.contains (regex "[A-Z]+") password)) "Password must contain one capital letter"
+            , Validation (not (Regex.contains (regex "[a-z]+") password)) "Password must contain one lowercase letter"
+            , Validation (not (Regex.contains (regex "\\d") password)) "Password must contain at least one digit"
+            , Validation (not (Regex.contains (regex "\\d") age)) "Age must be a number"
+            ]
+
+        validationErrorMessages =
+            validations
+                --keeps only those elements for which the function returns True
+                |> List.filter .condition
+                -- maps out new list with one entry for record in list containing .errorMessage field
+                -- which all have .condition = True at this point
+                |> List.map .errorMessage
+    in
+        -- returns new list created from above filtering and mapping
+        validationErrorMessages
