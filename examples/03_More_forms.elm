@@ -120,7 +120,7 @@ detectValidationErrors { name, password, passwordAgain, age } =
         validations =
             [ Validation (String.length name < 2) "Name must be at least 2 characters"
             , Validation (String.length password < 8) "Password must be at least 8 characters"
-            , Validation (String.contains "!" password) "! is a forbidden character"
+            , Validation (String.contains "!" password) "! is a forbiddn character"
             , Validation (password /= passwordAgain) "Passwords do not match"
             , Validation (not (Regex.contains (regex "[A-Z]+") password)) "Password must contain one capital letter"
             , Validation (not (Regex.contains (regex "[a-z]+") password)) "Password must contain one lowercase letter"
