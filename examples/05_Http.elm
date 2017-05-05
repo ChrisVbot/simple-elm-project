@@ -13,12 +13,13 @@ import Json.Decode as Decode
 type alias Model =
     { topic : String
     , gifUrl : String
+    , prevImages : List String
     }
 
 
 init : String -> ( Model, Cmd Msg )
 init topic =
-    ( Model topic "waiting.gif", getRandomGif topic )
+    ( Model topic "waiting.gif" [], getRandomGif topic )
 
 
 
@@ -29,6 +30,7 @@ type Msg
     = NewTopic String
     | MorePlease
     | NewGif (Result Http.Error String)
+    | Reset
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -38,13 +40,16 @@ update msg model =
             ( { model | topic = str }, Cmd.none )
 
         MorePlease ->
-            ( model, getRandomGif model.topic )
+            ( { model | prevImages = model.gifUrl :: model.prevImages }, getRandomGif model.topic )
 
         NewGif (Ok newUrl) ->
             ( { model | gifUrl = newUrl }, Cmd.none )
 
         NewGif (Err _) ->
             ( model, Cmd.none )
+
+        Reset ->
+            (init "cats")
 
 
 getRandomGif : String -> Cmd Msg
@@ -76,14 +81,43 @@ mainStyle =
         |> style
 
 
+imageList : Attribute msg
+imageList =
+    [ ( "display", "flex" )
+    , ( "justifyContent", "flexStart" )
+    ]
+        |> style
+
+
 view : Model -> Html Msg
 view model =
-    div [ mainStyle ]
-        [ h2 [] [ text ("Now showing gif of: " ++ model.topic) ]
-        , img [ src model.gifUrl ] []
-        , br [] []
-        , button [ onClick MorePlease ] [ text "Another!" ]
+    div []
+        [ div [ mainStyle ]
+            [ input [ placeholder "What you wanna gif?", onInput NewTopic ] []
+            , h2 [] [ text model.topic ]
+            , img [ src model.gifUrl ] []
+            , br [] []
+            , button [ onClick MorePlease ] [ text "New gif!" ]
+            , button [ onClick Reset ] [ text "Reset" ]
+            ]
+        , renderImageList model
         ]
+
+
+renderImageList : Model -> Html Msg
+renderImageList { prevImages } =
+    let
+        imageUrls =
+            List.reverse (List.map renderImage prevImages)
+    in
+        ul [ style [ ( "display", "flex" ), ( "listStyle", "none" ) ] ] imageUrls
+
+
+renderImage : String -> Html Msg
+renderImage imgUrl =
+    li
+        [ style [ ( "padding", "10px" ) ] ]
+        [ img [ src imgUrl ] [] ]
 
 
 subscriptions : Model -> Sub Msg
