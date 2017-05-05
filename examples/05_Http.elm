@@ -14,12 +14,13 @@ type alias Model =
     { topic : String
     , gifUrl : String
     , prevImages : List String
+    , isLoading : Bool
     }
 
 
 init : String -> ( Model, Cmd Msg )
 init topic =
-    ( Model topic "waiting.gif" [], getRandomGif topic )
+    ( Model topic loadingGifUrl [] False, getRandomGif topic )
 
 
 
@@ -40,10 +41,10 @@ update msg model =
             ( { model | topic = str }, Cmd.none )
 
         MorePlease ->
-            ( { model | prevImages = model.gifUrl :: model.prevImages }, getRandomGif model.topic )
+            ( { model | prevImages = model.gifUrl :: model.prevImages, isLoading = True }, getRandomGif model.topic )
 
         NewGif (Ok newUrl) ->
-            ( { model | gifUrl = newUrl }, Cmd.none )
+            ( { model | gifUrl = newUrl, isLoading = False }, Cmd.none )
 
         NewGif (Err _) ->
             ( model, Cmd.none )
@@ -73,18 +74,15 @@ decodeGifUrl =
 -- VIEW
 
 
+loadingGifUrl : String
+loadingGifUrl =
+    "../images/animal.gif"
+
+
 mainStyle : Attribute msg
 mainStyle =
     [ ( "textAlign", "center" )
     , ( "marginTop", "100px" )
-    ]
-        |> style
-
-
-imageList : Attribute msg
-imageList =
-    [ ( "display", "flex" )
-    , ( "justifyContent", "flexStart" )
     ]
         |> style
 
@@ -95,7 +93,12 @@ view model =
         [ div [ mainStyle ]
             [ input [ placeholder "What you wanna gif?", onInput NewTopic ] []
             , h2 [] [ text model.topic ]
-            , img [ src model.gifUrl ] []
+            , case model.isLoading of
+                True ->
+                    img [ src loadingGifUrl ] []
+
+                False ->
+                    img [ src model.gifUrl ] []
             , br [] []
             , button [ onClick MorePlease ] [ text "New gif!" ]
             , button [ onClick Reset ] [ text "Reset" ]
@@ -110,7 +113,15 @@ renderImageList { prevImages } =
         imageUrls =
             List.reverse (List.map renderImage prevImages)
     in
-        ul [ style [ ( "display", "flex" ), ( "listStyle", "none" ) ] ] imageUrls
+        ul
+            [ style
+                [ ( "display", "flex" )
+                , ( "listStyle", "none" )
+                , ( "flexDirection", "row" )
+                , ( "flexWrap", "wrap" )
+                ]
+            ]
+            imageUrls
 
 
 renderImage : String -> Html Msg
