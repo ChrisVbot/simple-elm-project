@@ -50,7 +50,7 @@ update msg model =
             ( model, Cmd.none )
 
         Reset ->
-            (init "cats")
+            (init model.topic)
 
 
 getRandomGif : String -> Cmd Msg
